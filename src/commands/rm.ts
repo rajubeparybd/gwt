@@ -67,7 +67,7 @@ export default class Rm extends Command {
           choices: worktrees.map((wt) => ({name: wt.branch, value: wt.branch})),
           message: 'Select the worktree to remove:',
           name: 'branchName',
-          type: 'list',
+          type: 'select',
         },
       ])
       branchName = answers.branchName
