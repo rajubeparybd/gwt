@@ -128,7 +128,7 @@ export default class Archive extends Command {
       const err = error as NodeJS.ErrnoException
       if (err.code === 'EBUSY' || err.code === 'EPERM') {
         this.error(
-          `Cannot archive worktree because it is currently in use by another program. Please 'cd' out of the directory and run 'twigx archive ${branchName}' again.`,
+          `Cannot archive worktree because it is currently in use by another program. Please 'cd' out of the directory and run 'gwt archive ${branchName}' again.`,
         )
       }
 

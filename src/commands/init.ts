@@ -7,7 +7,7 @@ import ora from 'ora'
 import {DEFAULT_CONFIG} from '../config.js'
 
 export default class Init extends Command {
-  static override description = 'Initialize twigx in the current repository'
+  static override description = 'Initialize gwt in the current repository'
   static override flags = {
     force: Flags.boolean({char: 'f', description: 'Overwrite existing config file if it exists'}),
   }
@@ -18,10 +18,10 @@ export default class Init extends Command {
     const cwd = process.cwd()
     const configPath = path.resolve(cwd, '.twigconfig.ts')
     const gitignorePath = path.resolve(cwd, '.gitignore')
-    const worktreeFolder = DEFAULT_CONFIG.worktree?.path ?? '.twigx-worktrees'
+    const worktreeFolder = DEFAULT_CONFIG.worktree?.path ?? '.gwt-worktrees'
 
     // 1. Create config file
-    const configContent = `import type { TwigxConfig } from '@rajubepary/twigx';
+    const configContent = `import type { TwigxConfig } from '@rajubepary/gwt';
 
 const config: TwigxConfig = {
   editors: {
@@ -94,14 +94,14 @@ export default config;
       this.error(`Failed to update .gitignore: ${error instanceof Error ? error.message : String(error)}`)
     }
 
-    // 3. Install @rajubepary/twigx as a dev dependency
-    const installSpinner = ora('Installing @rajubepary/twigx as a dev dependency').start()
+    // 3. Install @rajubepary/gwt as a dev dependency
+    const installSpinner = ora('Installing @rajubepary/gwt as a dev dependency').start()
     try {
-      await execa('npm', ['install', '@rajubepary/twigx', '-D'], {cwd})
-      installSpinner.succeed('Installed @rajubepary/twigx')
+      await execa('npm', ['install', '@rajubepary/gwt', '-D'], {cwd})
+      installSpinner.succeed('Installed @rajubepary/gwt')
     } catch (error) {
-      installSpinner.fail('Failed to install @rajubepary/twigx')
-      this.log(`Please run 'npm install @rajubepary/twigx -D' manually.`)
+      installSpinner.fail('Failed to install @rajubepary/gwt')
+      this.log(`Please run 'npm install @rajubepary/gwt -D' manually.`)
     }
   }
 }

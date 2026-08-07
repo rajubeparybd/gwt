@@ -1,11 +1,11 @@
 {
-  "name": "@rajubepary/twigx",
+  "name": "@rajubepary/gwt",
   "publishConfig": {
     "access": "public"
   },
   "description": "A Git worktree and PR management CLI tool for streamlined development workflows",
   "keywords": [
-    "twigx",
+    "gwt",
     "git",
     "worktree"
   ],
@@ -16,7 +16,7 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "bin": {
-    "twigx": "bin/run.js"
+    "gwt": "bin/run.js"
   },
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
@@ -35,8 +35,8 @@
     "release:push": "git push --follow-tags origin main"
   },
   "oclif": {
-    "bin": "twigx",
-    "dirname": "twigx",
+    "bin": "gwt",
+    "dirname": "gwt",
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help"
@@ -84,8 +84,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rajubeparybd/twigx.git"
+    "url": "git+https://github.com/rajubeparybd/gwt.git"
   },
-  "homepage": "https://github.com/rajubeparybd/twigx",
-  "bugs": "https://github.com/rajubeparybd/twigx/issues"
+  "homepage": "https://github.com/rajubeparybd/gwt",
+  "bugs": "https://github.com/rajubeparybd/gwt/issues"
 }

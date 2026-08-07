@@ -10,7 +10,7 @@ describe('init', () => {
 
   beforeEach(async () => {
     originalCwd = process.cwd()
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'twigx-test-'))
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gwt-test-'))
     process.chdir(tempDir)
   })
 
@@ -24,14 +24,14 @@ describe('init', () => {
     const output = stdout + stderr
 
     expect(output).to.contain('Created .twigconfig.ts')
-    expect(output).to.contain('Created .gitignore and added .twigx-worktrees')
+    expect(output).to.contain('Created .gitignore and added .gwt-worktrees')
 
     const configContent = await fs.readFile(path.join(tempDir, '.twigconfig.ts'), 'utf8')
     expect(configContent).to.contain('export default config;')
-    expect(configContent).to.contain('.twigx-worktrees')
+    expect(configContent).to.contain('.gwt-worktrees')
 
     const gitignoreContent = await fs.readFile(path.join(tempDir, '.gitignore'), 'utf8')
-    expect(gitignoreContent).to.contain('.twigx-worktrees')
+    expect(gitignoreContent).to.contain('.gwt-worktrees')
   })
 
   it('overwrites .twigconfig.ts when --force is used', async () => {
