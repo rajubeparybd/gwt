@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3](https://github.com/rajubeparybd/gwt/compare/v0.0.2...v0.0.3) (2026-08-07)
+
+### Features
+
+- add dynamic worktree open command ([d1f4444](https://github.com/rajubeparybd/gwt/commit/d1f4444e28c265603378a49781cb3a98f0eb72e5))
+
 ### 0.0.2 (2026-08-07)
 
 ### Features
