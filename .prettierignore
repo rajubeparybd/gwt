@@ -1,0 +1,17 @@
+*-debug.log
+*-error.log
+**/.DS_Store
+/.idea
+/dist
+/tmp
+/node_modules
+/ai
+oclif.manifest.json
+skills-lock.json
+
+.env*
+!.env.example
+yarn.lock
+pnpm-lock.yaml
+tsconfig.tsbuildinfo
+.agents 
