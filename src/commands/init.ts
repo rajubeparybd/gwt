@@ -26,7 +26,7 @@ export default class Init extends Command {
 const config: TwigxConfig = {
   editors: {
     default: 'code',
-    list: ['code', 'cursor', 'agy'],
+    list: ['code', 'cursor', 'antigravity-ide'],
   },
   pr: {
     autoView: true,
@@ -99,7 +99,7 @@ export default config;
     try {
       await execa('npm', ['install', '@rajubepary/gwt', '-D'], {cwd})
       installSpinner.succeed('Installed @rajubepary/gwt')
-    } catch (error) {
+    } catch {
       installSpinner.fail('Failed to install @rajubepary/gwt')
       this.log(`Please run 'npm install @rajubepary/gwt -D' manually.`)
     }

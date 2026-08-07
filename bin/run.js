@@ -11,6 +11,7 @@ process.emit = function (name, data, ...args) {
   ) {
     return false
   }
+
   return originalEmit.apply(process, [name, data, ...args])
 }
 

@@ -3,6 +3,7 @@ import {execa} from 'execa'
 import inquirer from 'inquirer'
 import path from 'node:path'
 import {simpleGit} from 'simple-git'
+
 import {DEFAULT_CONFIG, loadConfig} from '../../config.js'
 
 interface Worktree {
@@ -37,9 +38,7 @@ export default class Create extends Command {
     const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
     const {config, error: configError} = await loadConfig(configPath)
     if (configError) {
-      this.warn(
-        `Failed to load .twigconfig.ts, using default config. (${configError.message})`,
-      )
+      this.warn(`Failed to load .twigconfig.ts, using default config. (${configError.message})`)
     }
 
     try {

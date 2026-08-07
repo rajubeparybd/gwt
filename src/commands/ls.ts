@@ -3,6 +3,7 @@ import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import {simpleGit} from 'simple-git'
 import table from 'tty-table'
+
 import {DEFAULT_CONFIG, loadConfig} from '../config.js'
 
 interface Worktree {
@@ -37,9 +38,7 @@ export default class Ls extends Command {
     const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
     const {config, error: configError} = await loadConfig(configPath)
     if (configError) {
-      this.warn(
-        `Failed to load .twigconfig.ts, using default config. (${configError.message})`,
-      )
+      this.warn(`Failed to load .twigconfig.ts, using default config. (${configError.message})`)
     }
 
     const worktrees = this.parseWorktrees(rawWorktrees).filter((wt) => wt.branch !== 'main')

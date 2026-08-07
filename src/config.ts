@@ -1,10 +1,11 @@
-import {TwigxConfig} from './types.js'
 import * as fs from 'node:fs/promises'
+
+import {TwigxConfig} from './types.js'
 
 export const DEFAULT_CONFIG: TwigxConfig = {
   editors: {
     default: 'code',
-    list: ['code', 'cursor', 'agy'],
+    list: ['code', 'cursor', 'antigravity-ide'],
   },
   pr: {
     autoView: true,
@@ -31,13 +32,14 @@ export async function loadConfig(configPath: string): Promise<{config: TwigxConf
       .then(() => true)
       .catch(() => false)
     if (configExists) {
-      const { createJiti } = await import('jiti')
+      const {createJiti} = await import('jiti')
       const jiti = createJiti(import.meta.url)
-      const imported = await jiti.import(configPath, { default: true }) as any
+      const imported = (await jiti.import(configPath, {default: true})) as TwigxConfig & {default?: TwigxConfig}
       config = imported.default || imported || DEFAULT_CONFIG
     }
-  } catch (err: unknown) {
-    error = err instanceof Error ? err : new Error(String(err))
+  } catch (error_: unknown) {
+    error = error_ instanceof Error ? error_ : new Error(String(error_))
   }
+
   return {config, error}
 }
