@@ -15,6 +15,17 @@ export interface TwigxConfig {
   }
 
   /**
+   * Options related to GitHub pull requests.
+   */
+  pr?: {
+    /** Whether to automatically view the PR after creation. */
+    autoView?: boolean
+
+    /** The target branch to use when creating a new PR (e.g., 'main' or 'master'). */
+    targetBranch?: string
+  }
+
+  /**
    * Options for setting up the environment in a newly created worktree.
    */
   setup?: {
