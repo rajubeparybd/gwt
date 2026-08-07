@@ -33,7 +33,6 @@ const config: TwigxConfig = {
   },
   worktree: {
     baseBranch: 'origin/main',
-    branchNamePrefix: 'w',
     openAfterCreation: true,
     path: '.twigx-worktrees',
     pushAfterCreation: true,

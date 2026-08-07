@@ -35,9 +35,6 @@ export interface TwigxConfig {
     /** The base branch to use when creating a new worktree branch (e.g., 'main' or 'master'). */
     baseBranch?: string
 
-    /** A prefix to prepend to all new branch names created for worktrees. */
-    branchNamePrefix?: string
-
     /** Whether to automatically open the editor after creating a new worktree. */
     openAfterCreation?: boolean
 

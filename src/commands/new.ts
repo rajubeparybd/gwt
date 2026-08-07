@@ -68,10 +68,6 @@ export default class New extends Command {
       this.error('Branch name is required')
     }
 
-    const fullBranchName = config.worktree?.branchNamePrefix
-      ? `${config.worktree.branchNamePrefix}/${branchName}`
-      : branchName
-
     const worktreePath = path.resolve(
       cwd,
       config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string),
@@ -81,8 +77,8 @@ export default class New extends Command {
 
     const spinner = ora('Creating worktree...').start()
     try {
-      await git.raw(['worktree', 'add', '-b', fullBranchName, worktreePath, baseBranch])
-      spinner.succeed(`Worktree created at ${worktreePath} on branch ${fullBranchName}`)
+      await git.raw(['worktree', 'add', '-b', branchName, worktreePath, baseBranch])
+      spinner.succeed(`Worktree created at ${worktreePath} on branch ${branchName}`)
     } catch (error: unknown) {
       spinner.fail('Failed to create worktree')
       this.error(error instanceof Error ? error.message : String(error))
@@ -125,12 +121,12 @@ export default class New extends Command {
     }
 
     if (config.worktree?.pushAfterCreation) {
-      const pushSpinner = ora(`Pushing branch ${fullBranchName} to origin...`).start()
+      const pushSpinner = ora(`Pushing branch ${branchName} to origin...`).start()
       try {
-        await git.push(['-u', 'origin', fullBranchName])
-        pushSpinner.succeed(`Pushed branch ${fullBranchName} to origin`)
+        await git.push(['-u', 'origin', branchName])
+        pushSpinner.succeed(`Pushed branch ${branchName} to origin`)
       } catch (error: unknown) {
-        pushSpinner.fail(`Failed to push branch ${fullBranchName}`)
+        pushSpinner.fail(`Failed to push branch ${branchName}`)
         this.warn(error instanceof Error ? error.message : String(error))
       }
     }

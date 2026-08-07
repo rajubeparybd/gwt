@@ -11,7 +11,6 @@ export const DEFAULT_CONFIG: TwigxConfig = {
   },
   worktree: {
     baseBranch: 'origin/main',
-    branchNamePrefix: 'feat',
     openAfterCreation: false,
     path: '.twigx-worktrees',
     pushAfterCreation: false,
