@@ -1,17 +1,22 @@
 {
-  "name": "twigx",
-  "description": "A new CLI generated with oclif",
+  "name": "@rajubepary/twigx",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "A Git worktree and PR management CLI tool for streamlined development workflows",
   "keywords": [
-    "oclif"
+    "twigx",
+    "git",
+    "worktree"
   ],
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Raju Bepary",
   "license": "MIT",
   "main": "dist/index.js",
   "type": "module",
   "types": "dist/index.d.ts",
   "bin": {
-    "twigx": "./bin/run.js"
+    "twigx": "bin/run.js"
   },
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
@@ -21,15 +26,20 @@
     "posttest": "npm run format && npm run lint",
     "prepack": "oclif manifest && oclif readme",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md"
+    "version": "oclif readme && git add README.md",
+    "release": "standard-version",
+    "release:patch": "standard-version --release-as patch",
+    "release:minor": "standard-version --release-as minor",
+    "release:major": "standard-version --release-as major",
+    "release:dry-run": "standard-version --dry-run",
+    "release:push": "git push --follow-tags origin main"
   },
   "oclif": {
     "bin": "twigx",
     "dirname": "twigx",
     "commands": "./dist/commands",
     "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-help"
     ],
     "topicSeparator": " "
   },
@@ -44,7 +54,6 @@
   "dependencies": {
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
-    "@oclif/plugin-plugins": "^5",
     "chalk": "^6.0.0",
     "execa": "^10.0.1",
     "inquirer": "^14.0.2",
@@ -67,10 +76,14 @@
     "oclif": "^4",
     "prettier": "^3.9.6",
     "shx": "^0.3.3",
+    "standard-version": "^9.5.0",
     "ts-node": "^10",
     "typescript": "^5"
   },
-  "repository": "https://github.com/rajubeparybd/twigx",
-  "homepage": "https://github.com/rajubeparybd/twigx",
-  "bugs": "https://github.com/rajubeparybd/twigx/issues"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rajubepary/twigx.git"
+  },
+  "homepage": "https://github.com/rajubepary/twigx",
+  "bugs": "https://github.com/rajubepary/twigx/issues"
 }

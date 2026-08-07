@@ -1,13 +1,14 @@
 # twigx
 
-A new CLI generated with oclif
+A Git worktree and PR management CLI tool for streamlined development workflows
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/twigx.svg)](https://npmjs.org/package/twigx)
-[![Downloads/week](https://img.shields.io/npm/dw/twigx.svg)](https://npmjs.org/package/twigx)
+[![Version](https://img.shields.io/npm/v/@rajubepary/twigx.svg)](https://npmjs.org/package/@rajubepary/twigx)
+[![Downloads/week](https://img.shields.io/npm/dw/@rajubepary/twigx.svg)](https://npmjs.org/package/@rajubepary/twigx)
 
 <!-- toc -->
 
+- [twigx](#twigx)
 - [Usage](#usage)
 - [Commands](#commands)
 
@@ -18,11 +19,11 @@ A new CLI generated with oclif
 <!-- usage -->
 
 ```sh-session
-$ npm install -g twigx
+$ npm install -g @rajubepary/twigx
 $ twigx COMMAND
 running command...
 $ twigx (--version)
-twigx/0.0.0 win32-x64 node-v25.2.1
+twigx/0.0.1 win32-x64 node-v25.2.1
 $ twigx --help [COMMAND]
 USAGE
   $ twigx COMMAND
@@ -35,61 +36,51 @@ USAGE
 
 <!-- commands -->
 
-- [`twigx hello PERSON`](#twigx-hello-person)
-- [`twigx hello world`](#twigx-hello-world)
+- [`twigx archive [BRANCHNAME]`](#twigx-archive-branchname)
+- [`twigx cd [BRANCHNAME]`](#twigx-cd-branchname)
 - [`twigx help [COMMAND]`](#twigx-help-command)
-- [`twigx plugins`](#twigx-plugins)
-- [`twigx plugins add PLUGIN`](#twigx-plugins-add-plugin)
-- [`twigx plugins:inspect PLUGIN...`](#twigx-pluginsinspect-plugin)
-- [`twigx plugins install PLUGIN`](#twigx-plugins-install-plugin)
-- [`twigx plugins link PATH`](#twigx-plugins-link-path)
-- [`twigx plugins remove [PLUGIN]`](#twigx-plugins-remove-plugin)
-- [`twigx plugins reset`](#twigx-plugins-reset)
-- [`twigx plugins uninstall [PLUGIN]`](#twigx-plugins-uninstall-plugin)
-- [`twigx plugins unlink [PLUGIN]`](#twigx-plugins-unlink-plugin)
-- [`twigx plugins update`](#twigx-plugins-update)
+- [`twigx init`](#twigx-init)
+- [`twigx ls`](#twigx-ls)
+- [`twigx new [BRANCHNAME]`](#twigx-new-branchname)
+- [`twigx pr create [BRANCHNAME]`](#twigx-pr-create-branchname)
+- [`twigx pr merge [BRANCHNAME]`](#twigx-pr-merge-branchname)
+- [`twigx pr view [BRANCHNAME]`](#twigx-pr-view-branchname)
+- [`twigx rm [BRANCHNAME]`](#twigx-rm-branchname)
+- [`twigx unarchive [BRANCHNAME]`](#twigx-unarchive-branchname)
 
-## `twigx hello PERSON`
+## `twigx archive [BRANCHNAME]`
 
-Say hello
+Archive a git worktree
 
 ```
 USAGE
-  $ twigx hello PERSON -f <value>
+  $ twigx archive [BRANCHNAME]
 
 ARGUMENTS
-  PERSON  Person to say hello to
-
-FLAGS
-  -f, --from=<value>  (required) Who is saying hello
+  [BRANCHNAME]  Name of the branch/worktree to archive
 
 DESCRIPTION
-  Say hello
-
-EXAMPLES
-  $ twigx hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
+  Archive a git worktree
 ```
 
-_See code: [src/commands/hello/index.ts](https://github.com/Personal/twigx/blob/v0.0.0/src/commands/hello/index.ts)_
+_See code: [src/commands/archive.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/archive.ts)_
 
-## `twigx hello world`
+## `twigx cd [BRANCHNAME]`
 
-Say hello world
+Change terminal to a git worktree directory
 
 ```
 USAGE
-  $ twigx hello world
+  $ twigx cd [BRANCHNAME]
+
+ARGUMENTS
+  [BRANCHNAME]  Name of the branch/worktree to change into
 
 DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ twigx hello world
-  hello world! (./src/commands/hello/world.ts)
+  Change terminal to a git worktree directory
 ```
 
-_See code: [src/commands/hello/world.ts](https://github.com/Personal/twigx/blob/v0.0.0/src/commands/hello/world.ts)_
+_See code: [src/commands/cd.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/cd.ts)_
 
 ## `twigx help [COMMAND]`
 
@@ -111,294 +102,147 @@ DESCRIPTION
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.56/src/commands/help.ts)_
 
-## `twigx plugins`
+## `twigx init`
 
-List installed plugins.
+Initialize twigx in the current repository
 
 ```
 USAGE
-  $ twigx plugins [--json] [--core]
+  $ twigx init [-f]
 
 FLAGS
-  --core  Show core plugins.
-
-GLOBAL FLAGS
-  --json  Format output as json.
+  -f, --force  Overwrite existing config file if it exists
 
 DESCRIPTION
-  List installed plugins.
-
-EXAMPLES
-  $ twigx plugins
+  Initialize twigx in the current repository
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/5.4.86/src/commands/plugins/index.ts)_
+_See code: [src/commands/init.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/init.ts)_
 
-## `twigx plugins add PLUGIN`
+## `twigx ls`
 
-Installs a plugin into twigx.
+List all git worktrees
 
 ```
 USAGE
-  $ twigx plugins add PLUGIN... [--json] [-f] [-h] [-s | -v]
+  $ twigx ls [-a]
+
+FLAGS
+  -a, --archive  Include archived worktrees
+
+DESCRIPTION
+  List all git worktrees
+```
+
+_See code: [src/commands/ls.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/ls.ts)_
+
+## `twigx new [BRANCHNAME]`
+
+Create a new git worktree
+
+```
+USAGE
+  $ twigx new [BRANCHNAME]
 
 ARGUMENTS
-  PLUGIN...  Plugin to install.
-
-FLAGS
-  -f, --force    Force npm to fetch remote resources even if a local copy exists on disk.
-  -h, --help     Show CLI help.
-  -s, --silent   Silences npm output.
-  -v, --verbose  Show verbose npm output.
-
-GLOBAL FLAGS
-  --json  Format output as json.
+  [BRANCHNAME]  Name of the new branch
 
 DESCRIPTION
-  Installs a plugin into twigx.
-
-  Uses npm to install plugins.
-
-  Installation of a user-installed plugin will override a core plugin.
-
-  Use the TWIG_NPM_LOG_LEVEL environment variable to set the npm loglevel.
-  Use the TWIG_NPM_REGISTRY environment variable to set the npm registry.
-
-ALIASES
-  $ twigx plugins add
-
-EXAMPLES
-  Install a plugin from npm registry.
-
-    $ twigx plugins add myplugin
-
-  Install a plugin from a github url.
-
-    $ twigx plugins add https://github.com/someuser/someplugin
-
-  Install a plugin from a github slug.
-
-    $ twigx plugins add someuser/someplugin
+  Create a new git worktree
 ```
 
-## `twigx plugins:inspect PLUGIN...`
+_See code: [src/commands/new.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/new.ts)_
 
-Displays installation properties of a plugin.
+## `twigx pr create [BRANCHNAME]`
+
+Create a pull request for a worktree branch
 
 ```
 USAGE
-  $ twigx plugins inspect PLUGIN...
+  $ twigx pr create [BRANCHNAME]
 
 ARGUMENTS
-  PLUGIN...  [default: .] Plugin to inspect.
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-GLOBAL FLAGS
-  --json  Format output as json.
+  [BRANCHNAME]  Name of the branch/worktree to create a PR for
 
 DESCRIPTION
-  Displays installation properties of a plugin.
-
-EXAMPLES
-  $ twigx plugins inspect myplugin
+  Create a pull request for a worktree branch
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/5.4.86/src/commands/plugins/inspect.ts)_
+_See code: [src/commands/pr/create.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/pr/create.ts)_
 
-## `twigx plugins install PLUGIN`
+## `twigx pr merge [BRANCHNAME]`
 
-Installs a plugin into twigx.
+Merge a pull request for a worktree branch, fetch main, and archive the worktree
 
 ```
 USAGE
-  $ twigx plugins install PLUGIN... [--json] [-f] [-h] [-s | -v]
+  $ twigx pr merge [BRANCHNAME]
 
 ARGUMENTS
-  PLUGIN...  Plugin to install.
-
-FLAGS
-  -f, --force    Force npm to fetch remote resources even if a local copy exists on disk.
-  -h, --help     Show CLI help.
-  -s, --silent   Silences npm output.
-  -v, --verbose  Show verbose npm output.
-
-GLOBAL FLAGS
-  --json  Format output as json.
+  [BRANCHNAME]  Name of the branch/worktree to merge PR for
 
 DESCRIPTION
-  Installs a plugin into twigx.
-
-  Uses npm to install plugins.
-
-  Installation of a user-installed plugin will override a core plugin.
-
-  Use the TWIG_NPM_LOG_LEVEL environment variable to set the npm loglevel.
-  Use the TWIG_NPM_REGISTRY environment variable to set the npm registry.
-
-ALIASES
-  $ twigx plugins add
-
-EXAMPLES
-  Install a plugin from npm registry.
-
-    $ twigx plugins install myplugin
-
-  Install a plugin from a github url.
-
-    $ twigx plugins install https://github.com/someuser/someplugin
-
-  Install a plugin from a github slug.
-
-    $ twigx plugins install someuser/someplugin
+  Merge a pull request for a worktree branch, fetch main, and archive the worktree
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/5.4.86/src/commands/plugins/install.ts)_
+_See code: [src/commands/pr/merge.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/pr/merge.ts)_
 
-## `twigx plugins link PATH`
+## `twigx pr view [BRANCHNAME]`
 
-Links a plugin into the CLI for development.
+Review a pull request for a worktree branch
 
 ```
 USAGE
-  $ twigx plugins link PATH [-h] [--install] [-v]
+  $ twigx pr view [BRANCHNAME]
 
 ARGUMENTS
-  PATH  [default: .] path to plugin
-
-FLAGS
-  -h, --help          Show CLI help.
-  -v, --verbose
-      --[no-]install  Install dependencies after linking the plugin.
+  [BRANCHNAME]  Name of the branch/worktree to view PR for
 
 DESCRIPTION
-  Links a plugin into the CLI for development.
-
-  Installation of a linked plugin will override a user-installed or core plugin.
-
-  e.g. If you have a user-installed or core plugin that has a 'hello' command, installing a linked plugin with a 'hello'
-  command will override the user-installed or core plugin implementation. This is useful for development work.
-
-
-EXAMPLES
-  $ twigx plugins link myplugin
+  Review a pull request for a worktree branch
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/5.4.86/src/commands/plugins/link.ts)_
+_See code: [src/commands/pr/view.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/pr/view.ts)_
 
-## `twigx plugins remove [PLUGIN]`
+## `twigx rm [BRANCHNAME]`
 
-Removes a plugin from the CLI.
+Remove a git worktree and its branch
 
 ```
 USAGE
-  $ twigx plugins remove [PLUGIN...] [-h] [-v]
+  $ twigx rm [BRANCHNAME] [-a] [-f] [-r]
 
 ARGUMENTS
-  [PLUGIN...]  plugin to uninstall
+  [BRANCHNAME]  Name of the branch/worktree to remove
 
 FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
+  -a, --archive      Remove an archived worktree
+  -f, --force        Force removal without prompting
+  -r, --[no-]remote  Delete the remote branch as well
 
 DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ twigx plugins unlink
-  $ twigx plugins remove
-
-EXAMPLES
-  $ twigx plugins remove myplugin
+  Remove a git worktree and its branch
 ```
 
-## `twigx plugins reset`
+_See code: [src/commands/rm.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/rm.ts)_
 
-Remove all user-installed and linked plugins.
+## `twigx unarchive [BRANCHNAME]`
+
+Unarchive a git worktree and run setup scripts
 
 ```
 USAGE
-  $ twigx plugins reset [--hard] [--reinstall]
-
-FLAGS
-  --hard       Delete node_modules and package manager related files in addition to uninstalling plugins.
-  --reinstall  Reinstall all plugins after uninstalling.
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/5.4.86/src/commands/plugins/reset.ts)_
-
-## `twigx plugins uninstall [PLUGIN]`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ twigx plugins uninstall [PLUGIN...] [-h] [-v]
+  $ twigx unarchive [BRANCHNAME]
 
 ARGUMENTS
-  [PLUGIN...]  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
+  [BRANCHNAME]  Name of the branch/worktree to unarchive
 
 DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ twigx plugins unlink
-  $ twigx plugins remove
-
-EXAMPLES
-  $ twigx plugins uninstall myplugin
+  Unarchive a git worktree and run setup scripts
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/5.4.86/src/commands/plugins/uninstall.ts)_
+See code: [src/commands/unarchive.ts](https://github.com/rajubepary/twigx/blob/v0.0.1/src/commands/unarchive.ts)
 
-## `twigx plugins unlink [PLUGIN]`
+---
 
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ twigx plugins unlink [PLUGIN...] [-h] [-v]
-
-ARGUMENTS
-  [PLUGIN...]  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ twigx plugins unlink
-  $ twigx plugins remove
-
-EXAMPLES
-  $ twigx plugins unlink myplugin
-```
-
-## `twigx plugins update`
-
-Update installed plugins.
-
-```
-USAGE
-  $ twigx plugins update [-h] [-v]
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Update installed plugins.
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/5.4.86/src/commands/plugins/update.ts)_
-
-<!-- commandsstop -->
+Made with ❤️ by [Raju Bepary](https://x.com/intent/follow?screen_name=rajubeparybd)

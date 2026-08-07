@@ -4,13 +4,36 @@ name: version, tag and github release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New version to bump to (e.g. patch, minor, major, or specific version). Leave empty to just publish the current package.json version.'
+        required: false
+        type: string
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4
+      
+      - name: Setup git
+        if: ${{ github.event.inputs.version != '' }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+      - name: Bump version
+        if: ${{ github.event.inputs.version != '' }}
+        run: |
+          npm version ${{ github.event.inputs.version }} -m "chore: bump version to %s"
+          git push origin HEAD:${{ github.ref_name }} --follow-tags
+
       - name: Check if version already exists
         id: version-check
         run: |
@@ -28,23 +51,7 @@ jobs:
             echo "tag=v$package_version" >> $GITHUB_OUTPUT
           fi
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      - name: Setup git
-        if: ${{ steps.version-check.outputs.skipped == 'false' }}
-        run: |
-          git config --global user.email ${{ github.actor }}
-          git config --global user.name ${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com
-      - name: Generate oclif README
-        if: ${{ steps.version-check.outputs.skipped == 'false' }}
-        id: oclif-readme
-        run: |
-          npm install
-          npm exec oclif readme
-          if [ -n "$(git status --porcelain)" ]; then
-            git add .
-            git commit -am "chore: update README.md"
-            git push -u origin ${{ github.ref_name }}
-          fi
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Github Release
         uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5
         if: ${{ steps.version-check.outputs.skipped == 'false' }}
@@ -54,3 +61,25 @@ jobs:
           commit: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
           skipIfReleaseExists: true
+
+      - name: Install Dependencies
+        if: ${{ steps.version-check.outputs.skipped == 'false' }}
+        run: npm install
+
+      - name: Build
+        if: ${{ steps.version-check.outputs.skipped == 'false' }}
+        run: npm run build
+
+      - name: Prepack
+        if: ${{ steps.version-check.outputs.skipped == 'false' }}
+        run: npm run prepack
+
+      - name: Publish to NPM
+        uses: JS-DevTools/npm-publish@19c28f1ef146469e409470805ea4279d47c3d35c
+        if: ${{ steps.version-check.outputs.skipped == 'false' }}
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Postpack
+        if: ${{ steps.version-check.outputs.skipped == 'false' }}
+        run: npm run postpack
