@@ -2,7 +2,7 @@ import {Args, Command} from '@oclif/core'
 import inquirer from 'inquirer'
 import {spawnSync} from 'node:child_process'
 import path from 'node:path'
-import {simpleGit} from 'simple-git'
+import {simpleGit, SimpleGit} from 'simple-git'
 
 import {DEFAULT_CONFIG, loadConfig} from '../config.js'
 
@@ -10,6 +10,8 @@ interface Worktree {
   branch: string
   path: string
 }
+
+const normalizePath = (p: string) => path.resolve(p).toLowerCase()
 
 export default class Open extends Command {
   static override args = {
@@ -48,27 +50,15 @@ export default class Open extends Command {
       return
     }
 
-    let {branchName} = args
+    const {branchName} = args
+    const targetWorktree = await this.resolveTargetWorktree(git, branchName, worktrees, mainWorktreePath)
 
-    if (!branchName) {
-      const answers = await inquirer.prompt<{branchName: string}>([
-        {
-          choices: worktrees.map((wt) => ({name: wt.branch, value: wt.branch})),
-          message: 'Select the worktree to open:',
-          name: 'branchName',
-          type: 'select',
-        },
-      ])
-      branchName = answers.branchName
-    }
-
-    if (!branchName) {
-      this.error('Branch name is required')
-    }
-
-    const targetWorktree = worktrees.find((wt) => wt.branch === branchName)
     if (!targetWorktree) {
-      this.error(`Worktree for branch '${branchName}' not found.`)
+      if (branchName) {
+        this.error(`Worktree for branch '${branchName}' not found.`)
+      } else {
+        this.error('Failed to determine the target worktree.')
+      }
     }
 
     const targetPath = targetWorktree.path
@@ -117,5 +107,35 @@ export default class Open extends Command {
         return {branch, path: wtPath}
       })
       .filter((wt) => wt.path)
+  }
+
+  private async resolveTargetWorktree(
+    git: SimpleGit,
+    branchName: string | undefined,
+    worktrees: Worktree[],
+    mainWorktreePath: string,
+  ): Promise<undefined | Worktree> {
+    if (branchName) {
+      return worktrees.find((wt) => wt.branch === branchName)
+    }
+
+    const toplevel = await git.revparse(['--show-toplevel'])
+
+    const currentWorktree = worktrees.find((wt) => normalizePath(wt.path) === normalizePath(toplevel))
+    const isMainWorktree = currentWorktree && normalizePath(currentWorktree.path) === normalizePath(mainWorktreePath)
+
+    if (currentWorktree && !isMainWorktree) {
+      return currentWorktree
+    }
+
+    const answers = await inquirer.prompt<{branchName: string}>([
+      {
+        choices: worktrees.map((wt) => ({name: wt.branch, value: wt.branch})),
+        message: 'Select the worktree to open:',
+        name: 'branchName',
+        type: 'select',
+      },
+    ])
+    return worktrees.find((wt) => wt.branch === answers.branchName)
   }
 }
