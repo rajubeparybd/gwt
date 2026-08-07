@@ -22,7 +22,21 @@ export default class Unarchive extends Command {
   public async run(): Promise<void> {
     const {args} = await this.parse(Unarchive)
     const cwd = process.cwd()
-    const configPath = path.resolve(cwd, '.twigconfig.ts')
+    const git = simpleGit(cwd)
+
+    const isRepo = await git.checkIsRepo()
+    if (!isRepo) {
+      this.error('Current directory is not a git repository.')
+    }
+
+    const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
+    const mainWorktreeLine = rawWorktrees
+      .trim()
+      .split(/\r?\n/)
+      .find((line) => line.startsWith('worktree '))
+    const mainWorktreePath = mainWorktreeLine ? mainWorktreeLine.slice(9) : cwd
+
+    const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
     let config: TwigxConfig = DEFAULT_CONFIG
 
     try {
@@ -40,14 +54,10 @@ export default class Unarchive extends Command {
       )
     }
 
-    const git = simpleGit(cwd)
-
-    const isRepo = await git.checkIsRepo()
-    if (!isRepo) {
-      this.error('Current directory is not a git repository.')
-    }
-
-    const worktreeBasePath = path.resolve(cwd, config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string))
+    const worktreeBasePath = path.resolve(
+      mainWorktreePath,
+      config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string),
+    )
     const archiveDir = path.join(worktreeBasePath, '.archive')
 
     let archivedBranches: string[] = []

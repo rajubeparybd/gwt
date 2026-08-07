@@ -21,15 +21,39 @@ export default class Rm extends Command {
     branchName: Args.string({description: 'Name of the branch/worktree to remove'}),
   }
   static override description = 'Remove a git worktree and its branch'
-static override flags = {
+  static override flags = {
     archive: Flags.boolean({char: 'a', description: 'Remove an archived worktree'}),
+    force: Flags.boolean({char: 'f', description: 'Force removal without prompting'}),
+    remote: Flags.boolean({allowNo: true, char: 'r', description: 'Delete the remote branch as well'}),
   }
 
   // eslint-disable-next-line complexity
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(Rm)
     const cwd = process.cwd()
-    const configPath = path.resolve(cwd, '.twigconfig.ts')
+    const git = simpleGit(cwd)
+
+    const isRepo = await git.checkIsRepo()
+    if (!isRepo) {
+      this.error('Current directory is not a git repository.')
+    }
+
+    const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
+    const mainWorktreeLine = rawWorktrees
+      .trim()
+      .split(/\r?\n/)
+      .find((line) => line.startsWith('worktree '))
+    const mainWorktreePath = mainWorktreeLine ? mainWorktreeLine.slice(9) : cwd
+
+    if (cwd !== mainWorktreePath) {
+      try {
+        process.chdir(mainWorktreePath)
+      } catch {}
+    }
+
+    const mainGit = simpleGit(mainWorktreePath)
+
+    const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
     let config: TwigxConfig = DEFAULT_CONFIG
 
     try {
@@ -47,14 +71,10 @@ static override flags = {
       )
     }
 
-    const git = simpleGit(cwd)
-
-    const isRepo = await git.checkIsRepo()
-    if (!isRepo) {
-      this.error('Current directory is not a git repository.')
-    }
-
-    const worktreeBasePath = path.resolve(cwd, config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string))
+    const worktreeBasePath = path.resolve(
+      mainWorktreePath,
+      config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string),
+    )
     const archiveDir = path.join(worktreeBasePath, '.archive')
 
     let {branchName} = args
@@ -92,7 +112,6 @@ static override flags = {
 
       targetPath = path.join(archiveDir, branchName)
     } else {
-      const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
       const worktrees = this.parseWorktrees(rawWorktrees).filter((wt) => wt.branch !== 'main')
 
       if (worktrees.length === 0) {
@@ -134,41 +153,29 @@ static override flags = {
       ghConfigured = false
     }
 
-    let shouldForce: boolean | null = false
+    let shouldForce: boolean | null = Boolean(flags.force)
 
-    if (ghConfigured) {
-      try {
-        const {stdout} = await execa('gh', ['pr', 'view', branchName, '--json', 'state'])
-        const pr = JSON.parse(stdout)
-        if (pr.state === 'OPEN') {
-          const {force} = await inquirer.prompt<{force: boolean}>([
-            {
-              default: false,
-              message: `Branch '${branchName}' has an OPEN pull request. Force delete?`,
-              name: 'force',
-              type: 'confirm',
-            },
-          ])
-          if (!force) {
-            this.log('Operation cancelled.')
-            return
-          }
-
-          shouldForce = true
-        } else {
-          shouldForce = await this.checkMergedStatus(git, branchName, baseBranch)
-          if (shouldForce === null) return
-        }
-      } catch {
-        shouldForce = await this.checkMergedStatus(git, branchName, baseBranch)
-        if (shouldForce === null) return
-      }
-    } else {
-      shouldForce = await this.checkMergedStatus(git, branchName, baseBranch)
+    if (!flags.force) {
+      shouldForce = await this.checkForceDelete(ghConfigured, mainGit, branchName, baseBranch)
       if (shouldForce === null) return
     }
 
-    const spinner = ora(`Removing ${isArchive ? 'archived worktree' : 'worktree'} and branch '${branchName}'...`).start()
+    let deleteRemote = flags.remote
+    if (deleteRemote === undefined) {
+      const {shouldDeleteRemote} = await inquirer.prompt<{shouldDeleteRemote: boolean}>([
+        {
+          default: false,
+          message: `Delete remote branch 'origin/${branchName}' as well?`,
+          name: 'shouldDeleteRemote',
+          type: 'confirm',
+        },
+      ])
+      deleteRemote = shouldDeleteRemote
+    }
+
+    const spinner = ora(
+      `Removing ${isArchive ? 'archived worktree' : 'worktree'} and branch '${branchName}'...`,
+    ).start()
     try {
       if (isArchive) {
         try {
@@ -176,12 +183,12 @@ static override flags = {
         } catch {}
       } else {
         await (shouldForce
-          ? git.raw(['worktree', 'remove', '--force', targetPath])
-          : git.raw(['worktree', 'remove', targetPath]))
+          ? mainGit.raw(['worktree', 'remove', '--force', targetPath])
+          : mainGit.raw(['worktree', 'remove', targetPath]))
       }
 
       try {
-        await git.branch(['-D', branchName])
+        await mainGit.branch(['-D', branchName])
       } catch (error) {
         if (!isArchive) throw error
       }
@@ -195,10 +202,61 @@ static override flags = {
         } catch {}
       }
 
+      let remoteDeleted = false
+      let remoteError = ''
+      if (deleteRemote) {
+        try {
+          await mainGit.push(['origin', '--delete', branchName])
+          remoteDeleted = true
+        } catch (error: unknown) {
+          remoteError = error instanceof Error ? error.message : String(error)
+        }
+      }
+
       spinner.succeed(`Successfully removed ${isArchive ? 'archived worktree' : 'worktree'} and branch '${branchName}'`)
+
+      if (deleteRemote && !remoteDeleted) {
+        this.warn(`Failed to delete remote branch 'origin/${branchName}': ${remoteError}`)
+      }
     } catch (error: unknown) {
       spinner.fail(`Failed to remove ${isArchive ? 'archived worktree' : 'worktree'} or branch`)
       this.error(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  private async checkForceDelete(
+    ghConfigured: boolean,
+    git: SimpleGit,
+    branchName: string,
+    baseBranch: string,
+  ): Promise<boolean | null> {
+    if (!ghConfigured) {
+      return this.checkMergedStatus(git, branchName, baseBranch)
+    }
+
+    try {
+      const {stdout} = await execa('gh', ['pr', 'view', branchName, '--json', 'state'])
+      const pr = JSON.parse(stdout)
+      if (pr.state === 'OPEN') {
+        const {force} = await inquirer.prompt<{force: boolean}>([
+          {
+            default: false,
+            message: `Branch '${branchName}' has an OPEN pull request. Force delete?`,
+            name: 'force',
+            type: 'confirm',
+          },
+        ])
+        if (!force) {
+          this.log('Operation cancelled.')
+          return null
+        }
+
+        return true
+      }
+
+      return this.checkMergedStatus(git, branchName, baseBranch)
+    } catch {
+      return this.checkMergedStatus(git, branchName, baseBranch)
     }
   }
 

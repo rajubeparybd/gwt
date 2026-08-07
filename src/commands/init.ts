@@ -27,6 +27,10 @@ const config: TwigxConfig = {
     default: 'code',
     list: ['code', 'cursor', 'antigravity'],
   },
+  pr: {
+    autoView: true,
+    targetBranch: 'origin/main',
+  },
   setup: {
     commands: ['npm install'],
     copyFiles: ['.env'],

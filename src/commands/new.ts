@@ -23,7 +23,23 @@ export default class New extends Command {
     const {args} = await this.parse(New)
 
     const cwd = process.cwd()
-    const configPath = path.resolve(cwd, '.twigconfig.ts')
+    const git = simpleGit(cwd)
+
+    const isRepo = await git.checkIsRepo()
+    if (isRepo) {
+      // Continue
+    } else {
+      this.error('Current directory is not a git repository.')
+    }
+
+    const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
+    const mainWorktreeLine = rawWorktrees
+      .trim()
+      .split(/\r?\n/)
+      .find((line) => line.startsWith('worktree '))
+    const mainWorktreePath = mainWorktreeLine ? mainWorktreeLine.slice(9) : cwd
+
+    const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
     let config: TwigxConfig = DEFAULT_CONFIG
 
     try {
@@ -39,15 +55,6 @@ export default class New extends Command {
       this.warn(
         `Failed to load .twigconfig.ts, using default config. (${error instanceof Error ? error.message : String(error)})`,
       )
-    }
-
-    const git = simpleGit(cwd)
-
-    const isRepo = await git.checkIsRepo()
-    if (isRepo) {
-      // Continue
-    } else {
-      this.error('Current directory is not a git repository.')
     }
 
     let {branchName} = args
@@ -69,11 +76,19 @@ export default class New extends Command {
     }
 
     const worktreePath = path.resolve(
-      cwd,
+      mainWorktreePath,
       config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string),
       branchName,
     )
     const baseBranch = config.worktree?.baseBranch ?? (DEFAULT_CONFIG.worktree?.baseBranch as string)
+
+    const fetchSpinner = ora('Fetching latest from origin...').start()
+    try {
+      await git.fetch('origin')
+      fetchSpinner.succeed('Fetched latest from origin')
+    } catch (error: unknown) {
+      fetchSpinner.warn(`Failed to fetch from origin: ${error instanceof Error ? error.message : String(error)}`)
+    }
 
     const spinner = ora('Creating worktree...').start()
     try {

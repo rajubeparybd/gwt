@@ -25,7 +25,21 @@ export default class Create extends Command {
   public async run(): Promise<void> {
     const {args} = await this.parse(Create)
     const cwd = process.cwd()
-    const configPath = path.resolve(cwd, '.twigconfig.ts')
+    const git = simpleGit(cwd)
+
+    const isRepo = await git.checkIsRepo()
+    if (!isRepo) {
+      this.error('Current directory is not a git repository.')
+    }
+
+    const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
+    const mainWorktreeLine = rawWorktrees
+      .trim()
+      .split(/\r?\n/)
+      .find((line) => line.startsWith('worktree '))
+    const mainWorktreePath = mainWorktreeLine ? mainWorktreeLine.slice(9) : cwd
+
+    const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
     let config: TwigxConfig = DEFAULT_CONFIG
 
     try {
@@ -43,13 +57,6 @@ export default class Create extends Command {
       )
     }
 
-    const git = simpleGit(cwd)
-
-    const isRepo = await git.checkIsRepo()
-    if (!isRepo) {
-      this.error('Current directory is not a git repository.')
-    }
-
     try {
       await execa('gh', ['auth', 'status'])
     } catch {
@@ -65,7 +72,6 @@ export default class Create extends Command {
       this.error(`Failed to fetch active PRs: ${error instanceof Error ? error.message : String(error)}`)
     }
 
-    const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
     const worktrees = this.parseWorktrees(rawWorktrees).filter((wt) => wt.branch !== 'main')
 
     let {branchName} = args

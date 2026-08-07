@@ -14,7 +14,6 @@ export default class Cd extends Command {
   }
   static override description = 'Change terminal to a git worktree directory'
 
-   
   public async run(): Promise<void> {
     const {args} = await this.parse(Cd)
     const cwd = process.cwd()

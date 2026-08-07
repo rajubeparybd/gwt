@@ -81,8 +81,8 @@ export default class Merge extends Command {
       }
     }
 
-    if (!targetWorktree || !branchName) {
-      this.error('Branch name is required')
+    if (!targetWorktree) {
+      this.error('Branch name is required (or could not be auto-detected)')
     }
 
     const mergeAnswers = await inquirer.prompt<{deleteBranch: boolean; strategy: string}>([
@@ -128,17 +128,39 @@ export default class Merge extends Command {
       this.warn(`Failed to fetch main branch: ${error instanceof Error ? error.message : String(error)}`)
     }
 
-    this.log(`Archiving worktree '${targetWorktree.branch}'...`)
-    try {
-      await this.config.runCommand('archive', [targetWorktree.branch])
-    } catch (error: unknown) {
-      this.error(`Failed to archive worktree: ${error instanceof Error ? error.message : String(error)}`)
-    }
+    const actionAnswer = await inquirer.prompt<{action: string}>([
+      {
+        choices: [
+          {name: 'Archive the worktree', value: 'archive'},
+          {name: 'Delete the worktree completely', value: 'delete'},
+        ],
+        message: 'What should we do with the worktree?',
+        name: 'action',
+        type: 'select',
+      },
+    ])
 
-    if (mergeAnswers.deleteBranch) {
+    if (actionAnswer.action === 'archive') {
+      this.log(`Archiving worktree '${targetWorktree.branch}'...`)
       try {
-        await git.branch(['-D', targetWorktree.branch])
-      } catch {}
+        await this.config.runCommand('archive', [targetWorktree.branch])
+      } catch (error: unknown) {
+        this.error(`Failed to archive worktree: ${error instanceof Error ? error.message : String(error)}`)
+      }
+
+      if (mergeAnswers.deleteBranch) {
+        try {
+          const mainGit = simpleGit(mainWorktree ? mainWorktree.path : process.cwd())
+          await mainGit.branch(['-D', targetWorktree.branch])
+        } catch {}
+      }
+    } else if (actionAnswer.action === 'delete') {
+      this.log(`Deleting worktree '${targetWorktree.branch}'...`)
+      try {
+        await this.config.runCommand('rm', [targetWorktree.branch, '--force', '--no-remote'])
+      } catch (error: unknown) {
+        this.error(`Failed to delete worktree: ${error instanceof Error ? error.message : String(error)}`)
+      }
     }
   }
 

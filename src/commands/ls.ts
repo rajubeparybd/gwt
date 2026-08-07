@@ -24,7 +24,21 @@ export default class Ls extends Command {
   public async run(): Promise<void> {
     const {flags} = await this.parse(Ls)
     const cwd = process.cwd()
-    const configPath = path.resolve(cwd, '.twigconfig.ts')
+    const git = simpleGit(cwd)
+
+    const isRepo = await git.checkIsRepo()
+    if (!isRepo) {
+      this.error('Current directory is not a git repository.')
+    }
+
+    const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
+    const mainWorktreeLine = rawWorktrees
+      .trim()
+      .split(/\r?\n/)
+      .find((line) => line.startsWith('worktree '))
+    const mainWorktreePath = mainWorktreeLine ? mainWorktreeLine.slice(9) : cwd
+
+    const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
     let config: TwigxConfig = DEFAULT_CONFIG
 
     try {
@@ -42,20 +56,14 @@ export default class Ls extends Command {
       )
     }
 
-    const git = simpleGit(cwd)
-
-    const isRepo = await git.checkIsRepo()
-    if (!isRepo) {
-      this.error('Current directory is not a git repository.')
-    }
-
-    // Get worktrees and filter out the main branch
-    const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
     const worktrees = this.parseWorktrees(rawWorktrees).filter((wt) => wt.branch !== 'main')
 
     let archivedBranches: string[] = []
     if (flags.archive) {
-      const worktreeBasePath = path.resolve(cwd, config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string))
+      const worktreeBasePath = path.resolve(
+        mainWorktreePath,
+        config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string),
+      )
       const archiveDir = path.join(worktreeBasePath, '.archive')
       try {
         const items = await fs.readdir(archiveDir, {withFileTypes: true})
