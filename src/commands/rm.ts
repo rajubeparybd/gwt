@@ -1,4 +1,4 @@
-import {Args, Command} from '@oclif/core'
+import {Args, Command, Flags} from '@oclif/core'
 import {execa} from 'execa'
 import inquirer from 'inquirer'
 import * as fs from 'node:fs/promises'
@@ -21,10 +21,13 @@ export default class Rm extends Command {
     branchName: Args.string({description: 'Name of the branch/worktree to remove'}),
   }
   static override description = 'Remove a git worktree and its branch'
+static override flags = {
+    archive: Flags.boolean({char: 'a', description: 'Remove an archived worktree'}),
+  }
 
   // eslint-disable-next-line complexity
   public async run(): Promise<void> {
-    const {args} = await this.parse(Rm)
+    const {args, flags} = await this.parse(Rm)
     const cwd = process.cwd()
     const configPath = path.resolve(cwd, '.twigconfig.ts')
     let config: TwigxConfig = DEFAULT_CONFIG
@@ -51,35 +54,74 @@ export default class Rm extends Command {
       this.error('Current directory is not a git repository.')
     }
 
-    const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
-    const worktrees = this.parseWorktrees(rawWorktrees).filter((wt) => wt.branch !== 'main')
-
-    if (worktrees.length === 0) {
-      this.log('No worktrees found to remove.')
-      return
-    }
+    const worktreeBasePath = path.resolve(cwd, config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string))
+    const archiveDir = path.join(worktreeBasePath, '.archive')
 
     let {branchName} = args
+    let targetPath = ''
+    let isArchive = false
 
-    if (!branchName) {
-      const answers = await inquirer.prompt<{branchName: string}>([
-        {
-          choices: worktrees.map((wt) => ({name: wt.branch, value: wt.branch})),
-          message: 'Select the worktree to remove:',
-          name: 'branchName',
-          type: 'select',
-        },
-      ])
-      branchName = answers.branchName
+    if (flags.archive) {
+      isArchive = true
+      let archivedBranches: string[] = []
+      try {
+        const items = await fs.readdir(archiveDir, {withFileTypes: true})
+        archivedBranches = items.filter((i) => i.isDirectory()).map((i) => i.name)
+      } catch {}
+
+      if (archivedBranches.length === 0) {
+        this.log('No archived worktrees found to remove.')
+        return
+      }
+
+      if (!branchName) {
+        const answers = await inquirer.prompt<{branchName: string}>([
+          {
+            choices: archivedBranches.map((branch) => ({name: branch, value: branch})),
+            message: 'Select the archived worktree to remove:',
+            name: 'branchName',
+            type: 'select',
+          },
+        ])
+        branchName = answers.branchName
+      }
+
+      if (!archivedBranches.includes(branchName)) {
+        this.error(`Archived worktree for branch '${branchName}' not found.`)
+      }
+
+      targetPath = path.join(archiveDir, branchName)
+    } else {
+      const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
+      const worktrees = this.parseWorktrees(rawWorktrees).filter((wt) => wt.branch !== 'main')
+
+      if (worktrees.length === 0) {
+        this.log('No worktrees found to remove.')
+        return
+      }
+
+      if (!branchName) {
+        const answers = await inquirer.prompt<{branchName: string}>([
+          {
+            choices: worktrees.map((wt) => ({name: wt.branch, value: wt.branch})),
+            message: 'Select the worktree to remove:',
+            name: 'branchName',
+            type: 'select',
+          },
+        ])
+        branchName = answers.branchName
+      }
+
+      const targetWorktree = worktrees.find((wt) => wt.branch === branchName)
+      if (!targetWorktree) {
+        this.error(`Worktree for branch '${branchName}' not found.`)
+      }
+
+      targetPath = targetWorktree.path
     }
 
     if (!branchName) {
       this.error('Branch name is required')
-    }
-
-    const targetWorktree = worktrees.find((wt) => wt.branch === branchName)
-    if (!targetWorktree) {
-      this.error(`Worktree for branch '${branchName}' not found.`)
     }
 
     const baseBranch = config.worktree?.baseBranch ?? (DEFAULT_CONFIG.worktree?.baseBranch as string)
@@ -126,24 +168,36 @@ export default class Rm extends Command {
       if (shouldForce === null) return
     }
 
-    const spinner = ora(`Removing worktree and branch '${branchName}'...`).start()
+    const spinner = ora(`Removing ${isArchive ? 'archived worktree' : 'worktree'} and branch '${branchName}'...`).start()
     try {
-      await (shouldForce
-        ? git.raw(['worktree', 'remove', '--force', targetWorktree.path])
-        : git.raw(['worktree', 'remove', targetWorktree.path]))
-
-      await git.branch(['-D', branchName])
+      if (isArchive) {
+        try {
+          await fs.rm(targetPath, {force: true, recursive: true})
+        } catch {}
+      } else {
+        await (shouldForce
+          ? git.raw(['worktree', 'remove', '--force', targetPath])
+          : git.raw(['worktree', 'remove', targetPath]))
+      }
 
       try {
-        const stats = await fs.stat(targetWorktree.path)
-        if (stats.isDirectory()) {
-          await fs.rm(targetWorktree.path, {force: true, recursive: true})
-        }
-      } catch {}
+        await git.branch(['-D', branchName])
+      } catch (error) {
+        if (!isArchive) throw error
+      }
 
-      spinner.succeed(`Successfully removed worktree and branch '${branchName}'`)
+      if (!isArchive) {
+        try {
+          const stats = await fs.stat(targetPath)
+          if (stats.isDirectory()) {
+            await fs.rm(targetPath, {force: true, recursive: true})
+          }
+        } catch {}
+      }
+
+      spinner.succeed(`Successfully removed ${isArchive ? 'archived worktree' : 'worktree'} and branch '${branchName}'`)
     } catch (error: unknown) {
-      spinner.fail('Failed to remove worktree or branch')
+      spinner.fail(`Failed to remove ${isArchive ? 'archived worktree' : 'worktree'} or branch`)
       this.error(error instanceof Error ? error.message : String(error))
     }
   }
