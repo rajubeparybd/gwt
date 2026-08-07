@@ -26,7 +26,7 @@ export default class Init extends Command {
 const config: TwigxConfig = {
   editors: {
     default: 'code',
-    list: ['code', 'cursor', 'antigravity'],
+    list: ['code', 'cursor', 'agy'],
   },
   pr: {
     autoView: true,
@@ -39,7 +39,7 @@ const config: TwigxConfig = {
   worktree: {
     baseBranch: 'origin/main',
     openAfterCreation: true,
-    path: '.twigx-worktrees',
+    path: '.worktrees',
     pushAfterCreation: true,
   },
 };

@@ -4,7 +4,7 @@ import * as fs from 'node:fs/promises'
 export const DEFAULT_CONFIG: TwigxConfig = {
   editors: {
     default: 'code',
-    list: ['code', 'cursor', 'antigravity'],
+    list: ['code', 'cursor', 'agy'],
   },
   pr: {
     autoView: true,
@@ -17,7 +17,7 @@ export const DEFAULT_CONFIG: TwigxConfig = {
   worktree: {
     baseBranch: 'origin/main',
     openAfterCreation: false,
-    path: '.twigx-worktrees',
+    path: '.worktrees',
     pushAfterCreation: false,
   },
 }
