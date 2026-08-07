@@ -1,4 +1,5 @@
 import {Command, Flags} from '@oclif/core'
+import {execa} from 'execa'
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import ora from 'ora'
@@ -20,7 +21,7 @@ export default class Init extends Command {
     const worktreeFolder = DEFAULT_CONFIG.worktree?.path ?? '.twigx-worktrees'
 
     // 1. Create config file
-    const configContent = `import type { TwigxConfig } from 'twigx';
+    const configContent = `import type { TwigxConfig } from '@rajubepary/twigx';
 
 const config: TwigxConfig = {
   editors: {
@@ -91,6 +92,16 @@ export default config;
     } catch (error) {
       gitignoreSpinner.fail('Failed to update .gitignore')
       this.error(`Failed to update .gitignore: ${error instanceof Error ? error.message : String(error)}`)
+    }
+
+    // 3. Install @rajubepary/twigx as a dev dependency
+    const installSpinner = ora('Installing @rajubepary/twigx as a dev dependency').start()
+    try {
+      await execa('npm', ['install', '@rajubepary/twigx', '-D'], {cwd})
+      installSpinner.succeed('Installed @rajubepary/twigx')
+    } catch (error) {
+      installSpinner.fail('Failed to install @rajubepary/twigx')
+      this.log(`Please run 'npm install @rajubepary/twigx -D' manually.`)
     }
   }
 }
