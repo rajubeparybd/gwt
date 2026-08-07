@@ -4,13 +4,9 @@ import {execa} from 'execa'
 import inquirer from 'inquirer'
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
-import {pathToFileURL} from 'node:url'
 import ora from 'ora'
 import {simpleGit} from 'simple-git'
-
-import type {TwigxConfig} from '../types.js'
-
-import {DEFAULT_CONFIG} from '../config.js'
+import {DEFAULT_CONFIG, loadConfig} from '../config.js'
 
 export default class New extends Command {
   static override args = {
@@ -40,20 +36,10 @@ export default class New extends Command {
     const mainWorktreePath = mainWorktreeLine ? mainWorktreeLine.slice(9) : cwd
 
     const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
-    let config: TwigxConfig = DEFAULT_CONFIG
-
-    try {
-      const configExists = await fs
-        .stat(configPath)
-        .then(() => true)
-        .catch(() => false)
-      if (configExists) {
-        const imported = await import(pathToFileURL(configPath).href)
-        config = imported.default || imported
-      }
-    } catch (error: unknown) {
+    const {config, error: configError} = await loadConfig(configPath)
+    if (configError) {
       this.warn(
-        `Failed to load .twigconfig.ts, using default config. (${error instanceof Error ? error.message : String(error)})`,
+        `Failed to load .twigconfig.ts, using default config. (${configError.message})`,
       )
     }
 
