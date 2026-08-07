@@ -1,4 +1,4 @@
-import {Command} from '@oclif/core'
+import {Command, Flags} from '@oclif/core'
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import {pathToFileURL} from 'node:url'
@@ -16,8 +16,13 @@ interface Worktree {
 
 export default class Ls extends Command {
   static override description = 'List all git worktrees'
+  static override flags = {
+    archive: Flags.boolean({char: 'a', description: 'Include archived worktrees'}),
+  }
 
+  // eslint-disable-next-line complexity
   public async run(): Promise<void> {
+    const {flags} = await this.parse(Ls)
     const cwd = process.cwd()
     const configPath = path.resolve(cwd, '.twigconfig.ts')
     let config: TwigxConfig = DEFAULT_CONFIG
@@ -48,7 +53,17 @@ export default class Ls extends Command {
     const rawWorktrees = await git.raw(['worktree', 'list', '--porcelain'])
     const worktrees = this.parseWorktrees(rawWorktrees).filter((wt) => wt.branch !== 'main')
 
-    if (worktrees.length === 0) {
+    let archivedBranches: string[] = []
+    if (flags.archive) {
+      const worktreeBasePath = path.resolve(cwd, config.worktree?.path ?? (DEFAULT_CONFIG.worktree?.path as string))
+      const archiveDir = path.join(worktreeBasePath, '.archive')
+      try {
+        const items = await fs.readdir(archiveDir, {withFileTypes: true})
+        archivedBranches = items.filter((i) => i.isDirectory()).map((i) => i.name)
+      } catch {}
+    }
+
+    if (worktrees.length === 0 && (!flags.archive || archivedBranches.length === 0)) {
       this.log('No worktrees found.')
       return
     }
@@ -67,14 +82,35 @@ export default class Ls extends Command {
       {align: 'center', color: 'white', headerColor: 'cyan', value: `Merged into ${baseBranch}`},
     ]
 
+    if (flags.archive) {
+      header.push({align: 'center', color: 'white', headerColor: 'cyan', value: 'Status'})
+    }
+
     const rows = worktrees.map((wt) => {
       const isMerged = mergedBranches.includes(wt.branch) ? 'Yes' : 'No'
-      return [
+      const row = [
         wt.branch,
         path.join(config.worktree?.path || (DEFAULT_CONFIG.worktree?.path as string), path.basename(wt.path)),
         isMerged,
       ]
+      if (flags.archive) {
+        row.push('Active')
+      }
+
+      return row
     })
+
+    if (flags.archive) {
+      for (const branch of archivedBranches) {
+        const isMerged = mergedBranches.includes(branch) ? 'Yes' : 'No'
+        rows.push([
+          branch,
+          path.join(config.worktree?.path || (DEFAULT_CONFIG.worktree?.path as string), '.archive', branch),
+          isMerged,
+          'Archived',
+        ])
+      }
+    }
 
     const tbl = table(header, rows, {
       borderStyle: 'solid',
