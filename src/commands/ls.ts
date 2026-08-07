@@ -1,15 +1,17 @@
 import {Command} from '@oclif/core'
+import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import {pathToFileURL} from 'node:url'
-import * as fs from 'node:fs/promises'
 import {simpleGit} from 'simple-git'
-import Table from 'tty-table'
+import table from 'tty-table'
+
 import type {TwigxConfig} from '../types.js'
+
 import {DEFAULT_CONFIG} from '../config.js'
 
 interface Worktree {
-  path: string
   branch: string
+  path: string
 }
 
 export default class Ls extends Command {
@@ -51,7 +53,7 @@ export default class Ls extends Command {
       return
     }
 
-    const baseBranch = config.worktree?.baseBranch || (DEFAULT_CONFIG.worktree?.baseBranch as string)
+    const baseBranch = config.worktree?.baseBranch ?? (DEFAULT_CONFIG.worktree?.baseBranch as string)
 
     let mergedBranches: string[] = []
     try {
@@ -59,26 +61,27 @@ export default class Ls extends Command {
       mergedBranches = branchSummary.all
     } catch {}
 
-    const repoFolder = path.basename(cwd)
-
     const header = [
-      {value: 'Current Branch', align: 'left', headerColor: 'cyan', color: 'white'},
-      {value: 'Repo Folder', align: 'left', headerColor: 'cyan', color: 'white'},
-      {value: 'Worktree Folder', align: 'left', headerColor: 'cyan', color: 'white'},
-      {value: `Merged into ${baseBranch}`, align: 'center', headerColor: 'cyan', color: 'white'},
+      {align: 'left', color: 'white', headerColor: 'cyan', value: 'Branch'},
+      {align: 'left', color: 'white', headerColor: 'cyan', value: 'Worktree'},
+      {align: 'center', color: 'white', headerColor: 'cyan', value: `Merged into ${baseBranch}`},
     ]
 
     const rows = worktrees.map((wt) => {
       const isMerged = mergedBranches.includes(wt.branch) ? 'Yes' : 'No'
-      return [wt.branch, repoFolder, path.basename(wt.path), isMerged]
+      return [
+        wt.branch,
+        path.join(config.worktree?.path || (DEFAULT_CONFIG.worktree?.path as string), path.basename(wt.path)),
+        isMerged,
+      ]
     })
 
-    const table = Table(header, rows, {
+    const tbl = table(header, rows, {
       borderStyle: 'solid',
       color: 'white',
     })
 
-    this.log(table.render())
+    this.log(tbl.render())
   }
 
   private parseWorktrees(raw: string): Worktree[] {
@@ -90,12 +93,13 @@ export default class Ls extends Command {
         let branch = 'detached'
         for (const line of lines) {
           if (line.startsWith('worktree ')) {
-            wtPath = line.substring(9)
+            wtPath = line.slice(9)
           } else if (line.startsWith('branch refs/heads/')) {
-            branch = line.substring(18)
+            branch = line.slice(18)
           }
         }
-        return {path: wtPath, branch}
+
+        return {branch, path: wtPath}
       })
       .filter((wt) => wt.path)
   }

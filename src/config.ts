@@ -6,14 +6,14 @@ export const DEFAULT_CONFIG: TwigxConfig = {
     list: ['code', 'cursor', 'antigravity'],
   },
   setup: {
-    commands: ['npm install'],
-    copyFiles: ['.env'],
+    commands: [],
+    copyFiles: [],
   },
   worktree: {
     baseBranch: 'origin/main',
-    branchNamePrefix: 'w',
-    openAfterCreation: true,
+    branchNamePrefix: 'feat',
+    openAfterCreation: false,
     path: '.twigx-worktrees',
-    pushAfterCreation: true,
+    pushAfterCreation: false,
   },
 }
