@@ -4,6 +4,11 @@
  */
 export interface TwigxConfig {
   /**
+   * The default command to use for running AI tools.
+   */
+  aiCommand?: string
+
+  /**
    * Options related to code editors.
    */
   editors?: {

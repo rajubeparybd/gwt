@@ -3,6 +3,7 @@ import * as fs from 'node:fs/promises'
 import {TwigxConfig} from './types.js'
 
 export const DEFAULT_CONFIG: TwigxConfig = {
+  aiCommand: 'claude --dangerously-skip-permissions',
   editors: {
     default: 'code',
     list: ['code', 'cursor', 'antigravity-ide'],

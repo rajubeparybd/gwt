@@ -42,6 +42,7 @@ const config: TwigxConfig = {
     path: '.worktrees',
     pushAfterCreation: true,
   },
+  aiCommand: "claude --dangerously-skip-permissions",
 };
 
 export default config;
