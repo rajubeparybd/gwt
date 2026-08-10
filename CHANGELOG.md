@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://github.com/rajubeparybd/gwt/compare/v0.0.2...v0.0.4) (2026-08-10)
+
+
+### Features
+
+* add ai review command to perform code analysis against target branches ([a065083](https://github.com/rajubeparybd/gwt/commit/a06508386d525f4de62dfe538c8b693d7b461a4f))
+* add configuration system for AI tool management ([ecfaaba](https://github.com/rajubeparybd/gwt/commit/ecfaaba6bbe50523ae0daf7cb0b041ccc014b383))
+* add dynamic worktree open command ([d1f4444](https://github.com/rajubeparybd/gwt/commit/d1f4444e28c265603378a49781cb3a98f0eb72e5))
+
 ### [0.0.3](https://github.com/rajubeparybd/gwt/compare/v0.0.2...v0.0.3) (2026-08-07)
 
 ### Features
