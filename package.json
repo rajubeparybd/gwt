@@ -16,7 +16,8 @@
   "type": "module",
   "types": "dist/index.d.ts",
   "bin": {
-    "gwt": "bin/run.js"
+    "gwt": "bin/run.js",
+    "wt": "bin/run.js"
   },
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
