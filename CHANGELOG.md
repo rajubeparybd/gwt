@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/rajubeparybd/gwt/compare/v0.0.4...v0.0.5) (2026-08-12)
+
+
+### Features
+
+* add wt alias for the gwt command in package.json ([3249a49](https://github.com/rajubeparybd/gwt/commit/3249a49bb4216a8700ea9e404c18952547a713de))
+
 ### [0.0.4](https://github.com/rajubeparybd/gwt/compare/v0.0.2...v0.0.4) (2026-08-10)
 
 
