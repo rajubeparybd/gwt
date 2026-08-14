@@ -48,16 +48,22 @@ export interface TwigxConfig {
    * Options related to Git worktree creation and management.
    */
   worktree?: {
-    /** The base branch to use when creating a new worktree branch (e.g., 'main' or 'master'). */
-    baseBranch?: string
-
-    /** Whether to automatically open the editor after creating a new worktree. */
-    openAfterCreation?: boolean
-
     /** The default directory path where new worktrees should be created. */
     path?: string
 
+    /** The base branch to use when creating a new worktree branch (e.g., 'main' or 'master'). */
+    baseBranch?: string
+
     /** Whether to automatically push the new branch to the remote after creation. */
     pushAfterCreation?: boolean
+
+    /** Whether to automatically open the terminal after creating a new worktree. */
+    openInTerminal?: boolean
+
+    /** Whether to automatically open the editor after creating a new worktree. */
+    openInEditor?: boolean
+
+    /** Whether to automatically open the AI terminal after creating a new worktree. */
+    openInAiTerminal?: boolean
   }
 }

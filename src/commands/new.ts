@@ -2,6 +2,7 @@
 import {Args, Command} from '@oclif/core'
 import {execa} from 'execa'
 import inquirer from 'inquirer'
+import {spawnSync} from 'node:child_process'
 import * as fs from 'node:fs/promises'
 import path from 'node:path'
 import ora from 'ora'
@@ -131,7 +132,7 @@ export default class New extends Command {
       }
     }
 
-    if (config.worktree?.openAfterCreation) {
+    if (config.worktree?.openInEditor) {
       const editor = config.editors?.default ?? (DEFAULT_CONFIG.editors?.default as string)
       const openSpinner = ora(`Opening in ${editor}...`).start()
       try {
@@ -140,6 +141,22 @@ export default class New extends Command {
       } catch (error: unknown) {
         openSpinner.fail(`Failed to open in ${editor}`)
         this.warn(error instanceof Error ? error.message : String(error))
+      }
+    }
+
+    if (config.worktree?.openInAiTerminal) {
+      const aiCmd = config.aiCommand ?? (DEFAULT_CONFIG.aiCommand as string)
+      if (aiCmd) {
+        this.log(`Opening AI Terminal: ${aiCmd}... (type 'exit' to return)`)
+        try {
+          spawnSync(aiCmd, [], {
+            cwd: worktreePath,
+            shell: true,
+            stdio: 'inherit',
+          })
+        } catch (error: unknown) {
+          this.warn(`Failed to start AI terminal: ${error instanceof Error ? error.message : String(error)}`)
+        }
       }
     }
   }

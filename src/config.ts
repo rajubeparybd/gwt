@@ -5,7 +5,7 @@ import {TwigxConfig} from './types.js'
 export const DEFAULT_CONFIG: TwigxConfig = {
   aiCommand: 'claude --dangerously-skip-permissions',
   editors: {
-    default: 'code',
+    default: 'antigravity-ide',
     list: ['code', 'cursor', 'antigravity-ide'],
   },
   pr: {
@@ -17,9 +17,10 @@ export const DEFAULT_CONFIG: TwigxConfig = {
     copyFiles: [],
   },
   worktree: {
-    baseBranch: 'origin/main',
-    openAfterCreation: false,
     path: '.worktrees',
+    baseBranch: 'origin/main',
+    openInEditor: false,
+    openInAiTerminal: false,
     pushAfterCreation: false,
   },
 }

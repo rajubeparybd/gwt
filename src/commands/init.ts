@@ -25,7 +25,7 @@ export default class Init extends Command {
 
 const config: TwigxConfig = {
   editors: {
-    default: 'code',
+    default: 'antigravity-ide',
     list: ['code', 'cursor', 'antigravity-ide'],
   },
   pr: {
@@ -37,10 +37,11 @@ const config: TwigxConfig = {
     copyFiles: ['.env'],
   },
   worktree: {
-    baseBranch: 'origin/main',
-    openAfterCreation: true,
     path: '.worktrees',
-    pushAfterCreation: true,
+    baseBranch: 'origin/main',
+    openInEditor: false,
+    openInAiTerminal: false,
+    pushAfterCreation: false,
   },
   aiCommand: "claude --dangerously-skip-permissions",
 };
