@@ -1,6 +1,6 @@
 /**
  * Configuration options for the Twigx CLI.
- * Typically loaded from a configuration file like .twigconfig.ts.
+ * Typically loaded from a configuration file like .gwtconfig.ts.
  */
 export interface TwigxConfig {
   /**

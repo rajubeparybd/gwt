@@ -19,14 +19,14 @@ describe('init', () => {
     await fs.rm(tempDir, {force: true, recursive: true})
   })
 
-  it('creates .twigconfig.ts and adds worktree to .gitignore', async () => {
+  it('creates .gwtconfig.ts and adds worktree to .gitignore', async () => {
     const {stderr, stdout} = await runCommand('init')
     const output = stdout + stderr
 
-    expect(output).to.contain('Created .twigconfig.ts')
+    expect(output).to.contain('Created .gwtconfig.ts')
     expect(output).to.contain('Created .gitignore and added .gwt-worktrees')
 
-    const configContent = await fs.readFile(path.join(tempDir, '.twigconfig.ts'), 'utf8')
+    const configContent = await fs.readFile(path.join(tempDir, '.gwtconfig.ts'), 'utf8')
     expect(configContent).to.contain('export default config;')
     expect(configContent).to.contain('.gwt-worktrees')
 
@@ -34,25 +34,25 @@ describe('init', () => {
     expect(gitignoreContent).to.contain('.gwt-worktrees')
   })
 
-  it('overwrites .twigconfig.ts when --force is used', async () => {
+  it('overwrites .gwtconfig.ts when --force is used', async () => {
     // create a dummy config
-    await fs.writeFile(path.join(tempDir, '.twigconfig.ts'), 'dummy')
+    await fs.writeFile(path.join(tempDir, '.gwtconfig.ts'), 'dummy')
 
     const {stderr, stdout} = await runCommand('init --force')
-    expect(stdout + stderr).to.contain('Overwrote existing .twigconfig.ts')
+    expect(stdout + stderr).to.contain('Overwrote existing .gwtconfig.ts')
 
-    const configContent = await fs.readFile(path.join(tempDir, '.twigconfig.ts'), 'utf8')
+    const configContent = await fs.readFile(path.join(tempDir, '.gwtconfig.ts'), 'utf8')
     expect(configContent).to.not.equal('dummy')
     expect(configContent).to.contain('export default config;')
   })
 
   it('does not overwrite without --force', async () => {
-    await fs.writeFile(path.join(tempDir, '.twigconfig.ts'), 'dummy')
+    await fs.writeFile(path.join(tempDir, '.gwtconfig.ts'), 'dummy')
 
     const {stderr, stdout} = await runCommand('init')
-    expect(stdout + stderr).to.contain('.twigconfig.ts already exists. Use --force to overwrite.')
+    expect(stdout + stderr).to.contain('.gwtconfig.ts already exists. Use --force to overwrite.')
 
-    const configContent = await fs.readFile(path.join(tempDir, '.twigconfig.ts'), 'utf8')
+    const configContent = await fs.readFile(path.join(tempDir, '.gwtconfig.ts'), 'utf8')
     expect(configContent).to.equal('dummy')
   })
 })

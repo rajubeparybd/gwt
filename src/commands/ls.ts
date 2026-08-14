@@ -35,10 +35,10 @@ export default class Ls extends Command {
       .find((line) => line.startsWith('worktree '))
     const mainWorktreePath = mainWorktreeLine ? mainWorktreeLine.slice(9) : cwd
 
-    const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
+    const configPath = path.resolve(mainWorktreePath, '.gwtconfig.ts')
     const {config, error: configError} = await loadConfig(configPath)
     if (configError) {
-      this.warn(`Failed to load .twigconfig.ts, using default config. (${configError.message})`)
+      this.warn(`Failed to load .gwtconfig.ts, using default config. (${configError.message})`)
     }
 
     const worktrees = this.parseWorktrees(rawWorktrees).filter((wt) => wt.branch !== 'main')

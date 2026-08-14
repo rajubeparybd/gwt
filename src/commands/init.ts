@@ -16,7 +16,7 @@ export default class Init extends Command {
     const {flags} = await this.parse(Init)
 
     const cwd = process.cwd()
-    const configPath = path.resolve(cwd, '.twigconfig.ts')
+    const configPath = path.resolve(cwd, '.gwtconfig.ts')
     const gitignorePath = path.resolve(cwd, '.gitignore')
     const worktreeFolder = DEFAULT_CONFIG.worktree?.path ?? '.gwt-worktrees'
 
@@ -48,17 +48,17 @@ const config: TwigxConfig = {
 export default config;
 `
 
-    const configSpinner = ora('Creating .twigconfig.ts').start()
+    const configSpinner = ora('Creating .gwtconfig.ts').start()
     try {
       const configExists = await fs
         .stat(configPath)
         .then(() => true)
         .catch(() => false)
       if (configExists && !flags.force) {
-        configSpinner.info('.twigconfig.ts already exists. Use --force to overwrite.')
+        configSpinner.info('.gwtconfig.ts already exists. Use --force to overwrite.')
       } else {
         await fs.writeFile(configPath, configContent, 'utf8')
-        configSpinner.succeed(configExists ? 'Overwrote existing .twigconfig.ts' : 'Created .twigconfig.ts')
+        configSpinner.succeed(configExists ? 'Overwrote existing .gwtconfig.ts' : 'Created .gwtconfig.ts')
       }
     } catch (error) {
       configSpinner.fail('Failed to create config file')

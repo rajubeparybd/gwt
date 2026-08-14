@@ -50,10 +50,10 @@ export default class Rm extends Command {
 
     const mainGit = simpleGit(mainWorktreePath)
 
-    const configPath = path.resolve(mainWorktreePath, '.twigconfig.ts')
+    const configPath = path.resolve(mainWorktreePath, '.gwtconfig.ts')
     const {config, error: configError} = await loadConfig(configPath)
     if (configError) {
-      this.warn(`Failed to load .twigconfig.ts, using default config. (${configError.message})`)
+      this.warn(`Failed to load .gwtconfig.ts, using default config. (${configError.message})`)
     }
 
     const worktreeBasePath = path.resolve(
