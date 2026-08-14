@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.0](https://github.com/rajubeparybd/gwt/compare/v0.0.6...v0.1.0) (2026-08-14)
+
+
+### Features
+
+* add 2 more args for worktree creation ([f269574](https://github.com/rajubeparybd/gwt/commit/f269574f3703da017e398aeb0fdeb075d551cd01))
+
 ### [0.0.6](https://github.com/rajubeparybd/gwt/compare/v0.0.5...v0.0.6) (2026-08-14)
 
 ### [0.0.5](https://github.com/rajubeparybd/gwt/compare/v0.0.4...v0.0.5) (2026-08-12)
